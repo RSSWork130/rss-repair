@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RSS — Mechanic View</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap');
+  :root { --rss-blue:#1a3a6b; --rss-blue-mid:#1e4a8c; --rss-blue-light:#e8eef7; --accent:#c8000a; --border:#b0bac8; --text:#1a1a1a; --label:#3a4a60; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Barlow',sans-serif; background:#dde3ec; min-height:100vh; color:var(--text); }
+  .header { background:var(--rss-blue); display:flex; align-items:center; gap:16px; padding:14px 20px; }
+  .logo-box { background:#fff; border-radius:4px; padding:6px 10px; min-width:80px; display:flex; align-items:center; }
+  .logo-svg { width:64px; height:auto; }
+  .header-title { font-family:'Barlow Condensed',sans-serif; font-size:20px; font-weight:700; color:#fff; letter-spacing:0.04em; text-transform:uppercase; }
+  .header-sub { font-size:10px; color:#a0b8d8; letter-spacing:0.07em; text-transform:uppercase; }
+  .nav-bar { background:#122b52; display:flex; gap:2px; padding:0 20px; }
+  .nav-bar a { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#7ea0c8; text-decoration:none; padding:10px 12px; border-bottom:3px solid transparent; }
+  .nav-bar a:hover { color:#fff; }
+  .nav-bar a.active { color:#fff; border-bottom-color:#fff; }
+  /* MECHANIC SELECTOR */
+  .mechanic-bar { background:#fff; border-bottom:2px solid var(--rss-blue); padding:14px 20px; display:flex; align-items:center; gap:12px; }
+  .mechanic-bar label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--label); white-space:nowrap; }
+  .mechanic-bar select { flex:1; font-family:'Barlow',sans-serif; font-size:14px; font-weight:600; color:var(--rss-blue); border:1.5px solid var(--rss-blue-mid); background:var(--rss-blue-light); padding:8px 10px; border-radius:2px; outline:none; }
+  .btn-load { background:var(--rss-blue); color:#fff; border:none; font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; padding:9px 16px; cursor:pointer; border-radius:2px; white-space:nowrap; }
+  /* ORDER CARDS */
+  .orders-wrap { padding:16px 20px; }
+  .order-card { background:#fff; border:1px solid var(--border); border-left:5px solid var(--rss-blue); margin-bottom:14px; border-radius:2px; overflow:hidden; cursor:pointer; transition:box-shadow 0.15s; }
+  .order-card:hover { box-shadow:0 2px 12px rgba(26,58,107,0.15); }
+  .order-card.urgent { border-left-color:#c8000a; }
+  .order-card.high { border-left-color:#d97706; }
+  .order-card.complete { border-left-color:#2d6a2d; opacity:0.7; }
+  .card-header { padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .card-wo { font-family:'Barlow Condensed',sans-serif; font-size:16px; font-weight:700; color:var(--rss-blue); }
+  .card-vehicle { font-size:13px; font-weight:600; color:var(--text); }
+  .card-plate { font-size:11px; color:#666; }
+  .badges { display:flex; gap:6px; flex-wrap:wrap; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:2px; font-size:10px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; }
+  .badge-open { background:#e8eef7; color:var(--rss-blue); }
+  .badge-progress { background:#fef3c7; color:#92400e; }
+  .badge-complete { background:#d1fae5; color:#065f46; }
+  .badge-urgent { background:#fee2e2; color:#991b1b; }
+  .badge-high { background:#fef3c7; color:#92400e; }
+  .badge-normal { background:#f3f4f6; color:#6b7280; }
+  .card-desc { padding:0 16px 12px; font-size:13px; color:#444; line-height:1.5; border-top:1px solid #f0f3f8; padding-top:10px; }
+  .empty-state { text-align:center; padding:60px 20px; color:#999; }
+  .empty-state .big { font-size:48px; color:#ddd; font-family:'Barlow Condensed',sans-serif; }
+  .loading { text-align:center; padding:40px; color:var(--label); font-size:13px; }
+  /* COMPLETION MODAL */
+  .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; overflow-y:auto; padding:20px; }
+  .modal-bg.open { display:block; }
+  .modal { background:#fff; max-width:600px; margin:0 auto; border-top:4px solid var(--rss-blue); box-shadow:0 8px 40px rgba(0,0,0,0.3); }
+  .modal-header { background:var(--rss-blue); color:#fff; padding:14px 20px; display:flex; justify-content:space-between; align-items:center; }
+  .modal-header h2 { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:700; }
+  .modal-close { background:none; border:none; color:#fff; font-size:20px; cursor:pointer; }
+  .modal-section { padding:16px 20px; border-bottom:1px solid var(--border); }
+  .modal-section-title { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--rss-blue); margin-bottom:10px; }
+  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .info-item label { display:block; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:var(--label); }
+  .info-item .val { font-size:13px; color:var(--text); font-weight:500; }
+  .desc-box { background:var(--rss-blue-light); padding:10px 12px; font-size:13px; line-height:1.6; white-space:pre-wrap; border-left:3px solid var(--rss-blue); }
+  .form-field { margin-bottom:14px; }
+  .form-field label { display:block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:var(--label); margin-bottom:5px; }
+  .form-field textarea { width:100%; border:1.5px solid var(--border); font-family:'Barlow',sans-serif; font-size:13px; color:var(--text); padding:10px 12px; outline:none; line-height:1.6; resize:vertical; min-height:90px; }
+  .form-field textarea:focus { border-color:var(--rss-blue); }
+  /* SIGNATURE PAD */
+  .sig-wrap { border:1.5px solid var(--border); background:#fafafa; position:relative; }
+  .sig-canvas { width:100%; height:140px; display:block; touch-action:none; cursor:crosshair; }
+  .sig-actions { display:flex; justify-content:flex-end; padding:6px 10px; border-top:1px solid var(--border); gap:8px; background:#f5f7fb; }
+  .btn-clear-sig { background:#e5e7eb; border:none; font-family:'Barlow',sans-serif; font-size:11px; font-weight:600; color:#555; padding:5px 12px; cursor:pointer; border-radius:2px; }
+  .modal-actions { display:flex; gap:8px; justify-content:flex-end; padding:14px 20px; background:#f8f9fc; }
+  .btn-submit { background:var(--rss-blue); color:#fff; border:none; font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; padding:10px 24px; cursor:pointer; border-radius:2px; }
+  .btn-submit:hover { background:#122b52; }
+  .btn-submit:disabled { background:#aaa; cursor:not-allowed; }
+  .btn-cancel { background:#e5e7eb; color:var(--label); border:none; font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; padding:10px 16px; cursor:pointer; border-radius:2px; }
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1a3a6b; color:#fff; padding:12px 24px; border-radius:4px; font-size:13px; font-weight:600; box-shadow:0 4px 20px rgba(0,0,0,0.3); z-index:9999; display:none; }
+  .toast.success { background:#2d6a2d; }
+  .toast.error { background:var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-box">
+    <svg class="logo-svg" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+      <rect width="200" height="80" fill="#1a3a6b" rx="4"/>
+      <text x="100" y="45" font-family="Arial Black,sans-serif" font-size="48" font-weight="900" fill="white" text-anchor="middle" dominant-baseline="middle">RSS</text>
+      <rect x="8" y="62" width="184" height="3" fill="#4a90d9" rx="1"/>
+      <text x="100" y="77" font-family="Arial,sans-serif" font-size="7" fill="#7ab0e0" text-anchor="middle">ROAD SAFETY SYSTEMS, LLC.</text>
+    </svg>
+  </div>
+  <div>
+    <div class="header-title">My Work Orders</div>
+    <div class="header-sub">Mechanic View</div>
+  </div>
+</div>
+
+<div class="nav-bar">
+  <a href="index.html">New Order</a>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="mechanic.html" class="active">Mechanic View</a>
+</div>
+
+<div class="mechanic-bar">
+  <label>I am:</label>
+  <select id="mechanic-select">
+    <option value="">— Select your name —</option>
+    <option>Maxx</option>
+    <option>Dave</option>
+  </select>
+  <button class="btn-load" onclick="loadMyOrders()">Load Orders</button>
+</div>
+
+<div class="orders-wrap" id="orders-wrap">
+  <div class="empty-state"><div class="big">👷</div><p>Select your name above to see your assigned work orders.</p></div>
+</div>
+
+<!-- COMPLETION MODAL -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Complete Work Order</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+
+    <!-- Vehicle info (read-only) -->
+    <div class="modal-section">
+      <div class="modal-section-title">Vehicle Information</div>
+      <div class="info-grid" id="modal-vehicle-info"></div>
+    </div>
+
+    <!-- Work requested -->
+    <div class="modal-section">
+      <div class="modal-section-title">Work Requested</div>
+      <div class="desc-box" id="modal-description"></div>
+    </div>
+
+    <!-- Mechanic fills in -->
+    <div class="modal-section">
+      <div class="modal-section-title">Your Completion Report</div>
+      <div class="form-field">
+        <label>Work Completed *</label>
+        <textarea id="m-work-completed" placeholder="Describe what was done..."></textarea>
+      </div>
+      <div class="form-field">
+        <label>Parts Used / Notes</label>
+        <textarea id="m-mechanic-notes" placeholder="Parts replaced, observations, follow-up needed..." style="min-height:70px;"></textarea>
+      </div>
+    </div>
+
+    <!-- Signature -->
+    <div class="modal-section">
+      <div class="modal-section-title">Mechanic Signature</div>
+      <div class="sig-wrap">
+        <canvas class="sig-canvas" id="sig-canvas"></canvas>
+        <div class="sig-actions">
+          <button class="btn-clear-sig" onclick="clearSig()">Clear Signature</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-submit" id="complete-btn" onclick="submitCompletion()">Mark Complete ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOQPRE-Dp-QPC7E8k2ASM8lF1VYHgmLSwIwFwyMRz-PmiDITqjViLw226OFXwzyHcnIA/exec';
+let currentOrder = null;
+
+async function loadMyOrders() {
+  const mechanic = document.getElementById('mechanic-select').value;
+  if (!mechanic) { showToast('Please select your name.', 'error'); return; }
+  document.getElementById('orders-wrap').innerHTML = '<div class="loading">Loading your orders...</div>';
+  try {
+    const resp = await fetch(SCRIPT_URL);
+    const all = await resp.json();
+    const mine = all.filter(o => o['Assigned To'] === mechanic && o['Status'] !== 'Complete');
+    // Sort urgent first
+    const pOrder = { Urgent:0, High:1, Normal:2 };
+    mine.sort((a,b) => (pOrder[a['Priority']]||2) - (pOrder[b['Priority']]||2));
+    renderCards(mine);
+  } catch(err) {
+    document.getElementById('orders-wrap').innerHTML = `<div class="empty-state"><div class="big">!</div><p>Could not load orders.<br><small>${err.message}</small></p></div>`;
+  }
+}
+
+function renderCards(orders) {
+  if (!orders.length) {
+    document.getElementById('orders-wrap').innerHTML = '<div class="empty-state"><div class="big">✓</div><p>No open work orders assigned to you.</p></div>';
+    return;
+  }
+  let html = '';
+  orders.forEach(o => {
+    const pClass = o['Priority'] === 'Urgent' ? 'urgent' : o['Priority'] === 'High' ? 'high' : '';
+    const pBadge = o['Priority'] === 'Urgent' ? 'badge-urgent' : o['Priority'] === 'High' ? 'badge-high' : 'badge-normal';
+    const sBadge = o['Status'] === 'In Progress' ? 'badge-progress' : 'badge-open';
+    const desc = (o['Description']||'').substring(0,120) + ((o['Description']||'').length > 120 ? '…':'');
+    html += `<div class="order-card ${pClass}" onclick='openOrder(${JSON.stringify(o).replace(/'/g,"&#39;")})'>
+      <div class="card-header">
+        <div>
+          <div class="card-wo">${o['WO#']||'—'}</div>
+          <div class="card-vehicle">${o['Vehicle ID']||''} — ${o['Make/Model']||''}</div>
+          <div class="card-plate">Plate: ${o['Plate']||'—'} &nbsp;|&nbsp; Requested by: ${o['Requested By']||'—'}</div>
+        </div>
+        <div class="badges">
+          <span class="badge ${pBadge}">${o['Priority']||'Normal'}</span>
+          <span class="badge ${sBadge}">${o['Status']||'Open'}</span>
+        </div>
+      </div>
+      <div class="card-desc">${desc}</div>
+    </div>`;
+  });
+  document.getElementById('orders-wrap').innerHTML = html;
+}
+
+function openOrder(order) {
+  currentOrder = order;
+  document.getElementById('modal-title').textContent = (order['WO#']||'Work Order') + ' — ' + (order['Vehicle ID']||'');
+  document.getElementById('modal-vehicle-info').innerHTML = `
+    <div class="info-item"><label>Vehicle ID</label><div class="val">${order['Vehicle ID']||'—'}</div></div>
+    <div class="info-item"><label>Make/Model</label><div class="val">${order['Make/Model']||'—'}</div></div>
+    <div class="info-item"><label>Plate</label><div class="val">${order['Plate']||'—'}</div></div>
+    <div class="info-item"><label>Mileage/Hrs</label><div class="val">${order['Mileage/Hrs']||'—'}</div></div>
+  `;
+  document.getElementById('modal-description').textContent = order['Description'] || '—';
+  document.getElementById('m-work-completed').value = '';
+  document.getElementById('m-mechanic-notes').value = '';
+  clearSig();
+  document.getElementById('complete-btn').disabled = false;
+  document.getElementById('complete-btn').textContent = 'Mark Complete ✓';
+  document.getElementById('modal-bg').classList.add('open');
+  initSig();
+}
+
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('open');
+  currentOrder = null;
+}
+
+// SIGNATURE PAD
+let sigDrawing = false, sigCtx = null, sigCanvas = null;
+
+function initSig() {
+  sigCanvas = document.getElementById('sig-canvas');
+  sigCtx = sigCanvas.getContext('2d');
+  // Set actual pixel dimensions
+  const rect = sigCanvas.getBoundingClientRect();
+  sigCanvas.width = rect.width * window.devicePixelRatio;
+  sigCanvas.height = rect.height * window.devicePixelRatio;
+  sigCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  sigCtx.strokeStyle = '#1a1a1a';
+  sigCtx.lineWidth = 2;
+  sigCtx.lineCap = 'round';
+  sigCtx.lineJoin = 'round';
+
+  sigCanvas.onmousedown = e => { sigDrawing = true; sigCtx.beginPath(); sigCtx.moveTo(...getPos(e)); };
+  sigCanvas.onmousemove = e => { if (!sigDrawing) return; sigCtx.lineTo(...getPos(e)); sigCtx.stroke(); };
+  sigCanvas.onmouseup = () => sigDrawing = false;
+  sigCanvas.onmouseleave = () => sigDrawing = false;
+  sigCanvas.ontouchstart = e => { e.preventDefault(); sigDrawing = true; sigCtx.beginPath(); sigCtx.moveTo(...getPos(e.touches[0])); };
+  sigCanvas.ontouchmove = e => { e.preventDefault(); if (!sigDrawing) return; sigCtx.lineTo(...getPos(e.touches[0])); sigCtx.stroke(); };
+  sigCanvas.ontouchend = () => sigDrawing = false;
+}
+
+function getPos(e) {
+  const rect = sigCanvas.getBoundingClientRect();
+  return [e.clientX - rect.left, e.clientY - rect.top];
+}
+
+function clearSig() {
+  if (sigCtx && sigCanvas) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+}
+
+function isSigEmpty() {
+  if (!sigCanvas) return true;
+  const data = sigCtx.getImageData(0, 0, sigCanvas.width, sigCanvas.height).data;
+  return !data.some(v => v !== 0);
+}
+
+async function submitCompletion() {
+  const workDone = document.getElementById('m-work-completed').value.trim();
+  if (!workDone) { showToast('Please describe the work completed.', 'error'); return; }
+  if (isSigEmpty()) { showToast('Please sign before submitting.', 'error'); return; }
+
+  const btn = document.getElementById('complete-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  const sigData = sigCanvas.toDataURL('image/png');
+  const today = new Date().toLocaleDateString('en-US');
+
+  const payload = {
+    action: 'complete',
+    woNum: currentOrder['WO#'],
+    workCompleted: workDone,
+    mechanicNotes: document.getElementById('m-mechanic-notes').value.trim(),
+    dateCompleted: today,
+    signature: sigData,
+    mechanicName: document.getElementById('mechanic-select').value,
+  };
+
+  try {
+    const resp = await fetch(SCRIPT_URL, { method:'POST', body: JSON.stringify(payload) });
+    const result = await resp.json();
+    if (result.success) {
+      showToast('✓ Work Order ' + currentOrder['WO#'] + ' marked complete!', 'success');
+      closeModal();
+      setTimeout(() => loadMyOrders(), 1500);
+    } else {
+      throw new Error(result.error || 'Unknown error');
+    }
+  } catch(err) {
+    showToast('Error: ' + err.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Mark Complete ✓';
+  }
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (type||'');
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 4000);
+}
+</script>
+</body>
+</html>

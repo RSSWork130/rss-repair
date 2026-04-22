@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RSS Work Orders — Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap');
+  :root { --rss-blue:#1a3a6b; --rss-blue-mid:#1e4a8c; --rss-blue-light:#e8eef7; --accent:#c8000a; --border:#b0bac8; --text:#1a1a1a; --label:#3a4a60; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Barlow',sans-serif; background:#dde3ec; min-height:100vh; color:var(--text); }
+  .header { background:var(--rss-blue); display:flex; align-items:center; gap:20px; padding:14px 28px; }
+  .logo-box { background:#fff; border-radius:4px; padding:6px 10px; display:flex; align-items:center; min-width:90px; }
+  .logo-svg { width:72px; height:auto; }
+  .header-title { font-family:'Barlow Condensed',sans-serif; font-size:22px; font-weight:700; color:#fff; letter-spacing:0.04em; text-transform:uppercase; }
+  .header-sub { font-size:10px; color:#a0b8d8; margin-top:2px; letter-spacing:0.08em; text-transform:uppercase; }
+  .nav-bar { background:#122b52; display:flex; gap:2px; padding:0 28px; }
+  .nav-bar a { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#7ea0c8; text-decoration:none; padding:10px 16px; border-bottom:3px solid transparent; transition:all 0.15s; }
+  .nav-bar a:hover { color:#fff; }
+  .nav-bar a.active { color:#fff; border-bottom-color:#fff; }
+  .dash-body { padding:24px 28px; }
+  .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+  .stat-card { background:#fff; border:1px solid var(--border); padding:14px 18px; border-top:3px solid var(--rss-blue); }
+  .stat-card.urgent { border-top-color:#c8000a; }
+  .stat-card.high { border-top-color:#d97706; }
+  .stat-card.done { border-top-color:#2d6a2d; }
+  .stat-num { font-family:'Barlow Condensed',sans-serif; font-size:36px; font-weight:700; color:var(--rss-blue); line-height:1; }
+  .stat-card.urgent .stat-num { color:#c8000a; }
+  .stat-card.high .stat-num { color:#d97706; }
+  .stat-card.done .stat-num { color:#2d6a2d; }
+  .stat-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--label); margin-top:4px; }
+  .filter-bar { background:#fff; border:1px solid var(--border); padding:12px 16px; margin-bottom:16px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .filter-bar label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--label); }
+  .filter-bar select, .filter-bar input { font-family:'Barlow',sans-serif; font-size:12px; border:1.5px solid var(--border); padding:5px 8px; border-radius:2px; outline:none; background:#fff; color:var(--text); }
+  .filter-bar select:focus, .filter-bar input:focus { border-color:var(--rss-blue); }
+  .btn-refresh { background:var(--rss-blue-light); border:1.5px solid var(--rss-blue-mid); color:var(--rss-blue); font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; padding:6px 14px; cursor:pointer; border-radius:2px; margin-left:auto; }
+  .btn-refresh:hover { background:#d0dcef; }
+  .orders-table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--border); font-size:12px; }
+  .orders-table thead tr { background:var(--rss-blue); color:#fff; }
+  .orders-table thead th { font-family:'Barlow Condensed',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; padding:9px 12px; text-align:left; border-right:1px solid rgba(255,255,255,0.15); white-space:nowrap; }
+  .orders-table thead th:last-child { border-right:none; }
+  .orders-table tbody tr { border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.1s; }
+  .orders-table tbody tr:hover { background:var(--rss-blue-light); }
+  .orders-table tbody tr:nth-child(even) { background:#f5f7fb; }
+  .orders-table tbody tr:nth-child(even):hover { background:var(--rss-blue-light); }
+  .orders-table tbody td { padding:9px 12px; border-right:1px solid var(--border); vertical-align:top; }
+  .orders-table tbody td:last-child { border-right:none; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:2px; font-size:10px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; }
+  .badge-open { background:#e8eef7; color:var(--rss-blue); }
+  .badge-progress { background:#fef3c7; color:#92400e; }
+  .badge-complete { background:#d1fae5; color:#065f46; }
+  .badge-urgent { background:#fee2e2; color:#991b1b; }
+  .badge-high { background:#fef3c7; color:#92400e; }
+  .badge-normal { background:#f3f4f6; color:#6b7280; }
+  .empty-state { text-align:center; padding:60px 20px; color:#999; }
+  .empty-state .big { font-family:'Barlow Condensed',sans-serif; font-size:48px; color:#ddd; }
+  .empty-state p { margin-top:8px; font-size:14px; }
+  .loading { text-align:center; padding:40px; color:var(--label); font-size:13px; }
+  /* MODAL */
+  .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:20px; }
+  .modal-bg.open { display:flex; }
+  .modal { background:#fff; max-width:640px; width:100%; max-height:90vh; overflow-y:auto; border-top:4px solid var(--rss-blue); box-shadow:0 8px 40px rgba(0,0,0,0.3); }
+  .modal-header { background:var(--rss-blue); color:#fff; padding:14px 20px; display:flex; justify-content:space-between; align-items:center; }
+  .modal-header h2 { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:700; letter-spacing:0.05em; }
+  .modal-close { background:none; border:none; color:#fff; font-size:20px; cursor:pointer; padding:0 4px; }
+  .modal-body { padding:20px; }
+  .modal-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+  .modal-field label { display:block; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--label); margin-bottom:3px; }
+  .modal-field .val { font-size:13px; color:var(--text); font-weight:500; padding:4px 0; border-bottom:1px solid var(--border); min-height:24px; }
+  .modal-full { margin-bottom:12px; }
+  .modal-full label { display:block; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--label); margin-bottom:4px; }
+  .modal-full .val { font-size:13px; line-height:1.6; background:var(--rss-blue-light); padding:8px 12px; min-height:60px; white-space:pre-wrap; }
+  .modal-actions { display:flex; gap:8px; justify-content:flex-end; padding:14px 20px; border-top:1px solid var(--border); background:#f8f9fc; }
+  .btn-modal { font-family:'Barlow Condensed',sans-serif; font-size:12px; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; padding:8px 16px; border:none; cursor:pointer; border-radius:2px; }
+  .btn-close-modal { background:#e5e7eb; color:var(--label); }
+  .btn-close-modal:hover { background:#d1d5db; }
+  @media (max-width:700px) { .stats-row { grid-template-columns:1fr 1fr; } .dash-body { padding:14px; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-box">
+    <svg class="logo-svg" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+      <rect width="200" height="80" fill="#1a3a6b" rx="4"/>
+      <text x="100" y="45" font-family="Arial Black,sans-serif" font-size="48" font-weight="900" fill="white" text-anchor="middle" dominant-baseline="middle">RSS</text>
+      <rect x="8" y="62" width="184" height="3" fill="#4a90d9" rx="1"/>
+      <text x="100" y="77" font-family="Arial,sans-serif" font-size="7" fill="#7ab0e0" text-anchor="middle">ROAD SAFETY SYSTEMS, LLC.</text>
+    </svg>
+  </div>
+  <div>
+    <div class="header-title">Work Order Dashboard</div>
+    <div class="header-sub">Road Safety Systems, LLC &nbsp;·&nbsp; Office View</div>
+  </div>
+</div>
+
+<div class="nav-bar">
+  <a href="index.html">New Work Order</a>
+  <a href="dashboard.html" class="active">Dashboard</a>
+  <a href="mechanic.html">Mechanic View</a>
+</div>
+
+<div class="dash-body">
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num" id="stat-open">—</div><div class="stat-label">Open Orders</div></div>
+    <div class="stat-card urgent"><div class="stat-num" id="stat-urgent">—</div><div class="stat-label">Urgent</div></div>
+    <div class="stat-card high"><div class="stat-num" id="stat-high">—</div><div class="stat-label">High Priority</div></div>
+    <div class="stat-card done"><div class="stat-num" id="stat-done">—</div><div class="stat-label">Completed</div></div>
+  </div>
+
+  <div class="filter-bar">
+    <label>Status:</label>
+    <select id="filter-status" onchange="applyFilters()">
+      <option value="">All</option>
+      <option value="Open">Open</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Complete">Complete</option>
+    </select>
+    <label>Priority:</label>
+    <select id="filter-priority" onchange="applyFilters()">
+      <option value="">All</option>
+      <option value="Urgent">Urgent</option>
+      <option value="High">High</option>
+      <option value="Normal">Normal</option>
+    </select>
+    <label>Mechanic:</label>
+    <select id="filter-mechanic" onchange="applyFilters()">
+      <option value="">All</option>
+      <option>Maxx</option>
+      <option>Dave</option>
+    </select>
+    <button class="btn-refresh" onclick="loadOrders()">↻ Refresh</button>
+  </div>
+
+  <div id="table-wrap">
+    <div class="loading">Loading work orders...</div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Work Order Detail</h2>
+      <button class="modal-close" onclick="document.getElementById('modal-bg').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn-modal btn-close-modal" onclick="document.getElementById('modal-bg').classList.remove('open')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOQPRE-Dp-QPC7E8k2ASM8lF1VYHgmLSwIwFwyMRz-PmiDITqjViLw226OFXwzyHcnIA/exec';
+let allOrders = [];
+
+async function loadOrders() {
+  document.getElementById('table-wrap').innerHTML = '<div class="loading">Loading work orders...</div>';
+  try {
+    const resp = await fetch(SCRIPT_URL);
+    allOrders = await resp.json();
+    updateStats();
+    applyFilters();
+  } catch(err) {
+    document.getElementById('table-wrap').innerHTML = `<div class="empty-state"><div class="big">!</div><p>Could not load orders. Check your connection.<br><small>${err.message}</small></p></div>`;
+  }
+}
+
+function updateStats() {
+  const open = allOrders.filter(o => o['Status'] !== 'Complete').length;
+  const urgent = allOrders.filter(o => o['Priority'] === 'Urgent' && o['Status'] !== 'Complete').length;
+  const high = allOrders.filter(o => o['Priority'] === 'High' && o['Status'] !== 'Complete').length;
+  const done = allOrders.filter(o => o['Status'] === 'Complete').length;
+  document.getElementById('stat-open').textContent = open;
+  document.getElementById('stat-urgent').textContent = urgent;
+  document.getElementById('stat-high').textContent = high;
+  document.getElementById('stat-done').textContent = done;
+}
+
+function applyFilters() {
+  const status = document.getElementById('filter-status').value;
+  const priority = document.getElementById('filter-priority').value;
+  const mechanic = document.getElementById('filter-mechanic').value;
+  let filtered = allOrders.filter(o => {
+    if (status && o['Status'] !== status) return false;
+    if (priority && o['Priority'] !== priority) return false;
+    if (mechanic && o['Assigned To'] !== mechanic) return false;
+    return true;
+  });
+  // Sort: Urgent first, then High, then by date
+  const pOrder = { Urgent:0, High:1, Normal:2 };
+  filtered.sort((a,b) => {
+    const pd = (pOrder[a['Priority']]||2) - (pOrder[b['Priority']]||2);
+    if (pd !== 0) return pd;
+    return new Date(b['Date Created']) - new Date(a['Date Created']);
+  });
+  renderTable(filtered);
+}
+
+function renderTable(orders) {
+  if (!orders.length) {
+    document.getElementById('table-wrap').innerHTML = '<div class="empty-state"><div class="big">📋</div><p>No work orders match the current filters.</p></div>';
+    return;
+  }
+  let html = `<table class="orders-table">
+    <thead><tr>
+      <th>WO #</th><th>Date</th><th>Vehicle</th><th>Plate</th>
+      <th>Assigned To</th><th>Priority</th><th>Status</th><th>Description</th>
+    </tr></thead><tbody>`;
+  orders.forEach((o, i) => {
+    const pBadge = o['Priority'] === 'Urgent' ? 'badge-urgent' : o['Priority'] === 'High' ? 'badge-high' : 'badge-normal';
+    const sBadge = o['Status'] === 'Complete' ? 'badge-complete' : o['Status'] === 'In Progress' ? 'badge-progress' : 'badge-open';
+    const desc = (o['Description'] || '').substring(0, 60) + ((o['Description']||'').length > 60 ? '…' : '');
+    html += `<tr onclick="showDetail(${allOrders.indexOf(o)})">
+      <td><strong>${o['WO#']||'—'}</strong></td>
+      <td style="white-space:nowrap">${o['Date Created']||'—'}</td>
+      <td>${o['Vehicle ID']||'—'}</td>
+      <td>${o['Plate']||'—'}</td>
+      <td>${o['Assigned To']||'—'}</td>
+      <td><span class="badge ${pBadge}">${o['Priority']||'Normal'}</span></td>
+      <td><span class="badge ${sBadge}">${o['Status']||'Open'}</span></td>
+      <td style="max-width:200px;color:#555">${desc}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('table-wrap').innerHTML = html;
+}
+
+function showDetail(idx) {
+  const o = allOrders[idx];
+  document.getElementById('modal-title').textContent = (o['WO#']||'Work Order') + ' — ' + (o['Vehicle ID']||'');
+  const pBadge = o['Priority'] === 'Urgent' ? 'badge-urgent' : o['Priority'] === 'High' ? 'badge-high' : 'badge-normal';
+  const sBadge = o['Status'] === 'Complete' ? 'badge-complete' : o['Status'] === 'In Progress' ? 'badge-progress' : 'badge-open';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="modal-row">
+      <div class="modal-field"><label>WO #</label><div class="val">${o['WO#']||'—'}</div></div>
+      <div class="modal-field"><label>Date Created</label><div class="val">${o['Date Created']||'—'}</div></div>
+      <div class="modal-field"><label>Vehicle ID</label><div class="val">${o['Vehicle ID']||'—'}</div></div>
+      <div class="modal-field"><label>Make/Model</label><div class="val">${o['Make/Model']||'—'}</div></div>
+      <div class="modal-field"><label>Plate</label><div class="val">${o['Plate']||'—'}</div></div>
+      <div class="modal-field"><label>VIN</label><div class="val" style="font-size:11px">${o['VIN']||'—'}</div></div>
+      <div class="modal-field"><label>Mileage/Hrs</label><div class="val">${o['Mileage/Hrs']||'—'}</div></div>
+      <div class="modal-field"><label>Requested By</label><div class="val">${o['Requested By']||'—'}</div></div>
+      <div class="modal-field"><label>Assigned To</label><div class="val">${o['Assigned To']||'—'}</div></div>
+      <div class="modal-field"><label>Priority</label><div class="val"><span class="badge ${pBadge}">${o['Priority']||'Normal'}</span></div></div>
+      <div class="modal-field"><label>Status</label><div class="val"><span class="badge ${sBadge}">${o['Status']||'Open'}</span></div></div>
+      <div class="modal-field"><label>Date Completed</label><div class="val">${o['Date Completed']||'—'}</div></div>
+    </div>
+    <div class="modal-full"><label>Description / Work Requested</label><div class="val">${o['Description']||'—'}</div></div>
+    <div class="modal-full"><label>Parts</label><div class="val">${o['Parts']||'—'}</div></div>
+    <div class="modal-full"><label>Notes</label><div class="val">${o['Notes']||'—'}</div></div>
+    <div class="modal-full"><label>Work Completed (Mechanic)</label><div class="val">${o['Work Completed']||'Pending'}</div></div>
+    <div class="modal-full"><label>Mechanic Notes</label><div class="val">${o['Mechanic Notes']||'—'}</div></div>
+  `;
+  document.getElementById('modal-bg').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-bg')) document.getElementById('modal-bg').classList.remove('open');
+}
+
+loadOrders();
+</script>
+</body>
+</html>
