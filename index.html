@@ -125,9 +125,9 @@
   </div>
 
   <div class="nav-bar">
-    <a href="index.html" class="active">New Work Order</a>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="mechanic.html">Mechanic View</a>
+    <a href="https://RSSwork130.github.io/rss-repair/index.html" class="active">New Work Order</a>
+    <a href="https://RSSwork130.github.io/rss-repair/dashboard.html">Dashboard</a>
+    <a href="https://RSSwork130.github.io/rss-repair/mechanic.html">Mechanic View</a>
   </div>
 
   <div class="meta-bar">
@@ -143,6 +143,7 @@
         <label>Select from Fleet:</label>
         <select class="fleet-select" id="fleet-select" onchange="populateVehicle()">
           <option value="">— Select a Vehicle / Equipment —</option>
+          <option value="__manual__">✏️ Enter Manually (not in fleet list)</option>
         </select>
       </div>
       <div class="fields-grid">
@@ -304,8 +305,19 @@ fleet.forEach((v, i) => {
 
 function populateVehicle() {
   const idx = sel.value;
-  if (idx === '') { ['f-make','f-vin','f-plate','f-state','f-id','f-truck','f-reg','f-insp','f-dot'].forEach(id => document.getElementById(id).value = ''); return; }
+  const fields = ['f-make','f-vin','f-plate','f-state','f-id','f-truck','f-reg','f-insp','f-dot'];
+  if (idx === '') {
+    fields.forEach(id => { const el = document.getElementById(id); el.value = ''; el.readOnly = true; el.classList.add('auto-filled'); });
+    return;
+  }
+  if (idx === '__manual__') {
+    // Unlock all fields for manual entry
+    fields.forEach(id => { const el = document.getElementById(id); el.value = ''; el.readOnly = false; el.classList.remove('auto-filled'); el.style.background=''; el.style.color=''; });
+    document.getElementById('f-make').focus();
+    return;
+  }
   const v = fleet[idx];
+  fields.forEach(id => { const el = document.getElementById(id); el.readOnly = true; el.classList.add('auto-filled'); });
   document.getElementById('f-make').value  = v.make;
   document.getElementById('f-vin').value   = v.vin;
   document.getElementById('f-plate').value = v.plate;
