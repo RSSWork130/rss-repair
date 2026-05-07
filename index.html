@@ -240,68 +240,30 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOQPRE-Dp-QPC7E8k2A
 
 const MECHANICS = ['Maxx', 'Dave'];
 
-const fleet = [
-  { make:"1997 INTERNATIONAL 4700", desc:"LIFT TRUCK",         vin:"1HTSCAAN1VH467150", plate:"21933KA", state:"NY", reg:"11/30/2026", insp:"03/31/2020", dot:"15205299", truck:"14", id:"FBT-020" },
-  { make:"1999 FREIGHTLINER FL70",  desc:"BIG BOY",            vin:"1FVXJLCB4XHA36481", plate:"44573NA", state:"NY", reg:"08/31/2026", insp:"03/31/2024", dot:"15183052", truck:"11", id:"FBT-021" },
-  { make:"1999 MITSUBISHI FM617",   desc:"STERLING AUGER",     vin:"JW6DEJ1E3XM000483", plate:"53488JY", state:"NY", reg:"04/30/2026", insp:"03/31/2020", dot:"15179696", truck:"10", id:"FBT-022" },
-  { make:"2000 FREIGHTLINER FL70",  desc:"ATTENUATOR",         vin:"1FV6HJAA8YHF60918", plate:"95673JY", state:"NY", reg:"07/31/2026", insp:"03/31/2025", dot:"4607000267", truck:"2A", id:"FBT-023" },
-  { make:"2003 ISUZU NPR",          desc:"BOX TRUCK",          vin:"JALC4B15737003642", plate:"55070KA", state:"NY", reg:"02/28/2028", insp:"02/28/2025", dot:"460700016", truck:"2U", id:"FBT-044" },
-  { make:"2004 FREIGHTLINER M2",    desc:"RED POUNDER",        vin:"1FVACXCP64HN07588", plate:"36236JR", state:"NY", reg:"04/30/2026", insp:"02/28/2025", dot:"460700014", truck:"2P", id:"FBT-024" },
-  { make:"2005 FREIGHTLINER M2",    desc:"OLD YELLER",         vin:"1FVACWDC85HU32576", plate:"21934KA", state:"NY", reg:"11/30/2026", insp:"02/28/2025", dot:"460700012", truck:"3A", id:"FBT-025" },
-  { make:"2005 FREIGHTLINER M2-106",desc:"POUNDER DP",         vin:"1FVACXDC95HU48209", plate:"56782KA", state:"NY", reg:"04/30/2026", insp:"02/28/2025", dot:"460700013", truck:"3P", id:"FBT-026" },
-  { make:"2005 INTERNATIONAL 8600", desc:"WEST COAST",         vin:"1HSHXSBR95J162241", plate:"39682TR", state:"NY", reg:"02/28/2026", insp:"08/31/2024", dot:"15183064", truck:"4P", id:"TRT-015" },
-  { make:"2006 INTERNATIONAL 4300", desc:"ATTENUATOR",         vin:"1HTMMAALX6H303031", plate:"73111ME", state:"NY", reg:"05/31/2027", insp:"03/31/2025", dot:"460700027", truck:"",  id:"FBT-027" },
-  { make:"2006 ISUZU NPR",          desc:"CHRIS UTILITY",      vin:"JALB4B16167022633", plate:"27603KA", state:"NY", reg:"12/31/2027", insp:"01/31/2023", dot:"2290363",  truck:"4U", id:"FBT-028" },
-  { make:"2006 STERLING TRK",       desc:"TADANO CRANE",       vin:"2FZACGDC36AV97573", plate:"42969SC", state:"NY", reg:"12/31/2026", insp:"",           dot:"20557341", truck:"15", id:"FBT-029" },
-  { make:"2008 FORD F350",          desc:"SHOP UTILITY",       vin:"1FDWF37R68EA51317", plate:"54368JX", state:"NY", reg:"07/31/2026", insp:"04/30/2025", dot:"460700031", truck:"3U", id:"MT-287"  },
-  { make:"2008 MACK GU713",         desc:"TRACTOR W/ GRAPPLE", vin:"1M2AX04C88M003328", plate:"18303BR", state:"NY", reg:"02/28/2025", insp:"03/31/2026", dot:"110300182", truck:"",  id:"TRT-016" },
-  { make:"2008 MACK CXU613",        desc:"SILVER DOG",         vin:"1M1AW07Y68N002591", plate:"AZ879R",  state:"NJ", reg:"03/31/2025", insp:"03/31/2025", dot:"0460700028",truck:"16", id:"TRT-017" },
-  { make:"2009 FONTAINE TRAILER",   desc:"STEP DECK",          vin:"13N24820691548936", plate:"AW31366", state:"NY", reg:"12/31/2024", insp:"10/31/2024", dot:"15183067",  truck:"SPC",id:"TRT-037" },
-  { make:"2009 INTERNATIONAL L-60", desc:"ELLIOTT",            vin:"1HTMMAAP79HO71608", plate:"13354SM", state:"NY", reg:"12/31/2024", insp:"",           dot:"23464162",  truck:"SPC",id:"FBT-030" },
-  { make:"2011 INTERNATIONAL 4400", desc:"ATTENUATOR",         vin:"1HTMKAANXBH368592", plate:"25483MM", state:"NY", reg:"12/31/2026", insp:"02/28/2025", dot:"0460700019",truck:"",  id:"FBT-031" },
-  { make:"2011 PITTS LT 40",        desc:"LOGGER TRAILER",     vin:"5JYLT4225BP110774", plate:"AW31296", state:"NY", reg:"12/31/2024", insp:"05/31/2024", dot:"15183059",  truck:"SPC",id:"TRT-038" },
-  { make:"2012 INTERNATIONAL 7400", desc:"TRC W/ DRILL MOUNT", vin:"1HTWJAAT2CJ086631", plate:"23053SM", state:"NY", reg:"12/31/2024", insp:"",           dot:"",          truck:"",  id:"FBT-032" },
-  { make:"2012 MITSUBISHI FE 180",  desc:"DUMP",               vin:"JL6CRE1A9CK012879", plate:"53487JY", state:"NY", reg:"04/30/2026", insp:"03/31/2025", dot:"460700020", truck:"",  id:"HDT-002" },
-  { make:"2013 FREIGHTLINER M2",    desc:"ATTENUATOR",         vin:"1FVACWDT1DDBV0059", plate:"81416MN", state:"NY", reg:"03/31/2027", insp:"03/31/2024", dot:"15183050",  truck:"",  id:"FBT-033" },
-  { make:"2013 TALBERT TRAILER",    desc:"LOW BOY",            vin:"40FS04521D1032771", plate:"BE81279", state:"NY", reg:"12/31/2024", insp:"03/31/2025", dot:"0460700021", truck:"SPC",id:"TRT-039" },
-  { make:"2014 FREIGHTLINER M2",    desc:"ATTENUATOR",         vin:"1FVACXDT2EHFJ5378", plate:"81415MN", state:"NY", reg:"03/31/2027", insp:"03/31/2024", dot:"15183051",  truck:"",  id:"FBT-034" },
-  { make:"2014 ISUZU NPR",          desc:"UTILITY",            vin:"JALB4W175E7400399", plate:"55290MH", state:"NY", reg:"11/30/2027", insp:"03/30/2026", dot:"110300193", truck:"",  id:"FBT-035" },
-  { make:"2015 DORSEY COMP S",      desc:"DROP DECK",          vin:"5JYDC4829FE086055", plate:"AW31365", state:"NY", reg:"12/31/2024", insp:"03/31/2024", dot:"15183049",  truck:"SPC",id:"TRT-040" },
-  { make:"2015 HINO 268A",          desc:"FLATBED",            vin:"5PVNJ8JV9F4S58398", plate:"53474NB", state:"NY", reg:"10/31/2026", insp:"02/28/2025", dot:"460700017", truck:"",  id:"FBT-036" },
-  { make:"2015 HINO FH211",         desc:"FLAT BED",           vin:"5PVNJ8JV3F4S57876", plate:"74240NB", state:"NY", reg:"11/30/2026", insp:"03/31/2025", dot:"0460700023",truck:"",  id:"FBT-037" },
-  { make:"2015 FREIGHTLINER M2106", desc:"FLAT BED",           vin:"3ALACXDT8FDGR1228", plate:"35627ND", state:"NY", reg:"03/31/2027", insp:"03/31/2024", dot:"15183046",  truck:"",  id:"FBT-038" },
-  { make:"2015 HINO 338",           desc:"EQUIP CARRIER",      vin:"5PVNV8JT2F4S53515", plate:"AZ878R",  state:"NJ", reg:"03/31/2025", insp:"07/31/2024", dot:"15183063",  truck:"",  id:"FBT-039" },
-  { make:"2015 MACK CHU613",        desc:"TRACTOR",            vin:"1M1AN07YXFM019240", plate:"AZ880R",  state:"NJ", reg:"03/31/2025", insp:"03/03/2026", dot:"3113807",   truck:"",  id:"TRT-018" },
-  { make:"2016 VOLVO VNL64T",       desc:"TRACTOR",            vin:"4V4NC9EJ4GN954044", plate:"AZ881R",  state:"NJ", reg:"03/31/2025", insp:"02/28/2025", dot:"460700018", truck:"",  id:"TRT-019" },
-  { make:"2017 CHEVY 1500",         desc:"SILVERADO / GUS",    vin:"1GCVKNEH3HZ322411", plate:"BHN9089", state:"NY", reg:"04/30/2026", insp:"06/30/2023", dot:"2201906",   truck:"",  id:"LT-191"  },
-  { make:"2017 FREIGHTLINER M2",    desc:"ELLIOT L60R",        vin:"3ALACXDU8HDJF3648", plate:"23747SM", state:"NY", reg:"12/31/2024", insp:"",           dot:"13670036",  truck:"SPC",id:"FBT-040" },
-  { make:"2017 ISUZU NPR-HD",       desc:"UTILITY",            vin:"JALC4W161H7001277", plate:"76948KA", state:"NY", reg:"07/31/2026", insp:"03/31/2025", dot:"0460700022",truck:"",  id:"FBT-041" },
-  { make:"2017 MANAC SEMI",         desc:"EXT. FLATBED TRAILER",vin:"2M5121468H1163335",plate:"BL77606", state:"NY", reg:"12/31/2026", insp:"03/31/2024", dot:"15183055",  truck:"",  id:"FBT-052" },
-  { make:"2017 HINO 338",           desc:"FLAT BED",           vin:"5PVNV8JTXH4S54589", plate:"35548ND", state:"NY", reg:"03/31/2027", insp:"03/31/2025", dot:"15183056",  truck:"",  id:"FBT-042" },
-  { make:"2017 PETERBILT 567",      desc:"DUMP TRUCK",         vin:"1NPCXPEX5HD419482", plate:"AZ882R",  state:"NJ", reg:"03/31/2025", insp:"03/31/2025", dot:"0460700025",truck:"",  id:"HDT-003" },
-  { make:"2018 CAM 7CAM",           desc:"UTILITY TRAILER",    vin:"5JWCG2525JP065606", plate:"BP91958", state:"NY", reg:"12/31/2024", insp:"12/31/2021", dot:"15207462",  truck:"",  id:"CT-038"  },
-  { make:"2019 TALBERT AC3-25-AR",  desc:"TAG ALONG TRAILER",  vin:"40FR03630K5037479", plate:"BT25741", state:"NY", reg:"12/31/2024", insp:"06/30/2024", dot:"15183062",  truck:"",  id:"CT-039"  },
-  { make:"2019 GMC SIERRA 1500",    desc:"PICK UP / AL",       vin:"1GTR9BED8KZ401329", plate:"DDH4916", state:"NY", reg:"03/31/2027", insp:"12/31/2024", dot:"460700001", truck:"",  id:"LT-192"  },
-  { make:"2019 GMC CANYON",         desc:"PICK UP / JESUS",    vin:"1GTG6CEN2K1335292", plate:"HVC7452", state:"NY", reg:"08/31/2025", insp:"01/31/2024", dot:"2083082",   truck:"",  id:"LT-193"  },
-  { make:"2019 GMC CANYON",         desc:"RED / VICTOR",       vin:"1GTG6DEN4K1320704", plate:"LHE5026", state:"NY", reg:"12/31/2027", insp:"02/28/2025", dot:"460700010", truck:"",  id:"LT-194"  },
-  { make:"2019 GMC SIERRA",         desc:"PICK UP",            vin:"1GTR9AEF0KZ322247", plate:"EVJ5463", state:"NY", reg:"10/31/2025", insp:"02/28/2025", dot:"460700006", truck:"",  id:"LT-195"  },
-  { make:"2019 KENWORTH K370",      desc:"NEW POUNDER",        vin:"3BKJHM7X7KF582048", plate:"44572NA", state:"NY", reg:"08/31/2026", insp:"03/07/2026", dot:"110300187", truck:"",  id:"FBT-043" },
-  { make:"2021 CHEVY 1500",         desc:"SILVERADO GABE",     vin:"1GCPYBEK7MZ430994", plate:"53909MG", state:"NY", reg:"07/31/2026", insp:"02/28/2025", dot:"460700005", truck:"",  id:"LT-196"  },
-  { make:"2022 GMC SIERRA 2500",    desc:"BOB",                vin:"1GT59ME73NF215451", plate:"53009NC", state:"NY", reg:"01/31/2026", insp:"02/28/2027", dot:"4200214",   truck:"",  id:"MT-288"  },
-  { make:"2023 CHEVY 1500",         desc:"SILVERADO JESUS",    vin:"1GCRDKEK2PZ284190", plate:"HYK9940", state:"NY", reg:"03/31/2026", insp:"06/30/2024", dot:"17639725",  truck:"",  id:"LT-197"  },
-  { make:"2024 FORD F-150",         desc:"CHRIS PICK UP",      vin:"1FTFW3L59RKE06927", plate:"LPL3812", state:"NY", reg:"09/30/2026", insp:"10/31/2025", dot:"460700052", truck:"",  id:"LT-204"  },
-  { make:"2024 FORD F-150",         desc:"TBD PICK UP",        vin:"1FTFW3L55RKE04267", plate:"40506NF", state:"NY", reg:"08/31/2026", insp:"10/31/2025", dot:"460700053", truck:"",  id:"LT-203"  },
-  { make:"2024 FORD F-150",         desc:"PICK UP DAVID",      vin:"1FTFW3L29RKD06181", plate:"40507NF", state:"NY", reg:"08/31/2026", insp:"10/31/2025", dot:"460700054", truck:"",  id:"LT-202"  },
-];
-
-// Populate fleet dropdown
+// Fleet loaded dynamically from Google Sheet
+let fleet = [];
 const sel = document.getElementById('fleet-select');
-fleet.forEach((v, i) => {
-  const opt = document.createElement('option');
-  opt.value = i;
-  opt.textContent = `${v.id}  —  ${v.make}  (${v.desc})  [${v.plate}]`;
-  sel.appendChild(opt);
-});
+
+async function loadFleet() {
+  try {
+    const resp = await fetch(`${SCRIPT_URL}?action=getFleet`);
+    const data = await resp.json();
+    fleet = data;
+    sel.innerHTML = '<option value="">— Select a Vehicle / Equipment —</option><option value="__manual__">✏️ Enter Manually (not in fleet list)</option>';
+    fleet.forEach((v, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      const desc = v['Description'] ? ` (${v['Description']})` : '';
+      const plate = v['Plate'] ? ` [${v['Plate']}]` : '';
+      const truck = v['Truck#'] ? ` Truck #${v['Truck#']}` : '';
+      opt.textContent = `${v['ID']}${truck}  —  ${v['Make/Model']}${desc}${plate}`;
+      sel.appendChild(opt);
+    });
+  } catch(err) {
+    console.error('Fleet load failed:', err);
+  }
+}
+loadFleet();
 
 function populateVehicle() {
   const idx = sel.value;
@@ -311,22 +273,21 @@ function populateVehicle() {
     return;
   }
   if (idx === '__manual__') {
-    // Unlock all fields for manual entry
     fields.forEach(id => { const el = document.getElementById(id); el.value = ''; el.readOnly = false; el.classList.remove('auto-filled'); el.style.background=''; el.style.color=''; });
     document.getElementById('f-make').focus();
     return;
   }
   const v = fleet[idx];
   fields.forEach(id => { const el = document.getElementById(id); el.readOnly = true; el.classList.add('auto-filled'); });
-  document.getElementById('f-make').value  = v.make;
-  document.getElementById('f-vin').value   = v.vin;
-  document.getElementById('f-plate').value = v.plate;
-  document.getElementById('f-state').value = v.state;
-  document.getElementById('f-id').value    = v.id;
-  document.getElementById('f-truck').value = v.truck;
-  document.getElementById('f-reg').value   = v.reg;
-  document.getElementById('f-insp').value  = v.insp;
-  document.getElementById('f-dot').value   = v.dot;
+  document.getElementById('f-make').value  = v['Make/Model'] || '';
+  document.getElementById('f-vin').value   = v['VIN'] || '';
+  document.getElementById('f-plate').value = v['Plate'] || '';
+  document.getElementById('f-state').value = v['State'] || '';
+  document.getElementById('f-id').value    = v['ID'] || '';
+  document.getElementById('f-truck').value = v['Truck#'] || '';
+  document.getElementById('f-reg').value   = v['Reg Exp'] || '';
+  document.getElementById('f-insp').value  = v['Insp Exp'] || '';
+  document.getElementById('f-dot').value   = v['DOT'] || '';
 }
 
 // Parts table
