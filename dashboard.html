@@ -156,73 +156,124 @@
 <div class="main">
   <div class="page-title">Work Order Dashboard</div>
 
-  <!-- STATS -->
-  <div class="stats-bar">
-    <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Total</div></div>
-    <div class="stat-card open"><div class="stat-num" id="stat-open">—</div><div class="stat-label">Open</div></div>
-    <div class="stat-card complete"><div class="stat-num" id="stat-complete">—</div><div class="stat-label">Complete</div></div>
-    <div class="stat-card high"><div class="stat-num" id="stat-high">—</div><div class="stat-label">High Priority</div></div>
+  <!-- TAB BAR -->
+  <div style="display:flex;gap:2px;margin-bottom:20px;border-bottom:2px solid var(--border);">
+    <button class="dash-tab active" id="tab-orders-btn" onclick="switchDashTab('orders')" style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:10px 20px;cursor:pointer;color:var(--rss-blue);background:none;border:none;border-bottom:3px solid var(--rss-blue);margin-bottom:-2px;">Work Orders</button>
+    <button class="dash-tab" id="tab-service-btn" onclick="switchDashTab('service')" style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:10px 20px;cursor:pointer;color:var(--label);background:none;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;">Fleet & Service</button>
   </div>
 
-  <!-- FILTERS -->
-  <div class="filters">
-    <div class="filter-group">
-      <label>Status</label>
-      <select id="f-status" onchange="applyFilters()">
-        <option value="">All</option>
-        <option value="Open">Open</option>
-        <option value="In Progress">In Progress</option>
-        <option value="Complete">Complete</option>
-      </select>
+  <div id="dash-panel-orders">
+    <!-- STATS -->
+    <div class="stats-bar">
+      <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Total</div></div>
+      <div class="stat-card open"><div class="stat-num" id="stat-open">—</div><div class="stat-label">Open</div></div>
+      <div class="stat-card complete"><div class="stat-num" id="stat-complete">—</div><div class="stat-label">Complete</div></div>
+      <div class="stat-card high"><div class="stat-num" id="stat-high">—</div><div class="stat-label">High Priority</div></div>
     </div>
-    <div class="filter-group">
-      <label>Mechanic</label>
-      <select id="f-mechanic" onchange="applyFilters()">
-        <option value="">All</option>
-        <option value="Maxx">Maxx</option>
-        <option value="Dave">Dave</option>
-      </select>
+
+    <!-- FILTERS -->
+    <div class="filters">
+      <div class="filter-group">
+        <label>Status</label>
+        <select id="f-status" onchange="applyFilters()">
+          <option value="">All</option>
+          <option value="Open">Open</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Complete">Complete</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Mechanic</label>
+        <select id="f-mechanic" onchange="applyFilters()">
+          <option value="">All</option>
+          <option value="Maxx">Maxx</option>
+          <option value="Dave">Dave</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Priority</label>
+        <select id="f-priority" onchange="applyFilters()">
+          <option value="">All</option>
+          <option value="High">High</option>
+          <option value="Normal">Normal</option>
+          <option value="Low">Low</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Search</label>
+        <input type="text" id="f-search" placeholder="Vehicle, description…" oninput="applyFilters()" style="width:200px;">
+      </div>
+      <button class="btn-reset" onclick="resetFilters()">Reset Filters</button>
     </div>
-    <div class="filter-group">
-      <label>Priority</label>
-      <select id="f-priority" onchange="applyFilters()">
-        <option value="">All</option>
-        <option value="High">High</option>
-        <option value="Normal">Normal</option>
-        <option value="Low">Low</option>
-      </select>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <div id="loading" class="loading">Loading work orders…</div>
+      <table id="wo-table" style="display:none;">
+        <thead>
+          <tr>
+            <th>WO #</th>
+            <th>Date</th>
+            <th>Vehicle</th>
+            <th>Truck #</th>
+            <th>Assigned To</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Description</th>
+            <th>Requested By</th>
+            <th>Date Completed</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="wo-tbody"></tbody>
+      </table>
+      <div id="empty-state" class="empty-state" style="display:none;">
+        <div class="icon">📋</div>
+        <p>No work orders match your filters.</p>
+      </div>
     </div>
-    <div class="filter-group">
-      <label>Search</label>
-      <input type="text" id="f-search" placeholder="Vehicle, description…" oninput="applyFilters()" style="width:200px;">
-    </div>
-    <button class="btn-reset" onclick="resetFilters()">Reset Filters</button>
   </div>
 
-  <!-- TABLE -->
-  <div class="table-wrap">
-    <div id="loading" class="loading">Loading work orders…</div>
-    <table id="wo-table" style="display:none;">
-      <thead>
-        <tr>
-          <th>WO #</th>
-          <th>Date</th>
-          <th>Vehicle</th>
-          <th>Truck #</th>
-          <th>Assigned To</th>
-          <th>Priority</th>
-          <th>Status</th>
-          <th>Description</th>
-          <th>Requested By</th>
-          <th>Date Completed</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="wo-tbody"></tbody>
-    </table>
-    <div id="empty-state" class="empty-state" style="display:none;">
-      <div class="icon">📋</div>
-      <p>No work orders match your filters.</p>
+  <!-- FLEET & SERVICE PANEL -->
+  <div id="dash-panel-service" style="display:none;">
+    <div class="stats-bar">
+      <div class="stat-card high"><div class="stat-num" id="stat-overdue">—</div><div class="stat-label">Overdue Service</div></div>
+      <div class="stat-card open"><div class="stat-num" id="stat-duesoon">—</div><div class="stat-label">Due Soon</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-fleet-total">—</div><div class="stat-label">Tracked Vehicles</div></div>
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:24px;">
+      <table id="due-service-table">
+        <thead><tr><th>Truck #</th><th>Vehicle</th><th>Status</th><th>Miles Remaining</th><th>Days Remaining</th></tr></thead>
+        <tbody id="due-service-tbody"></tbody>
+      </table>
+      <div id="due-service-empty" class="empty-state" style="display:none;">
+        <div class="icon">✅</div>
+        <p>No vehicles currently due or overdue for service.</p>
+      </div>
+    </div>
+
+    <div class="page-title" style="font-size:18px;margin-bottom:14px;">Vehicle Service Settings</div>
+    <div class="table-wrap" style="margin-bottom:24px;">
+      <table id="fleet-service-table">
+        <thead><tr><th>Truck #</th><th>Vehicle</th><th>Last Service Date</th><th>Last Service Mileage</th><th>Current Mileage</th><th>Interval (Miles)</th><th>Interval (Days)</th><th>Save</th></tr></thead>
+        <tbody id="fleet-service-tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="page-title" style="font-size:18px;margin-bottom:14px;">Reminder Email List</div>
+    <div class="filters" style="margin-bottom:14px;">
+      <div class="filter-group">
+        <label>Add Email</label>
+        <input type="email" id="new-reminder-email" placeholder="name@example.com" style="width:240px;">
+      </div>
+      <button class="btn-reset" onclick="addReminderEmail()" style="background:var(--green);color:#fff;border-color:var(--green);">+ Add Email</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Email</th><th>Action</th></tr></thead>
+        <tbody id="reminder-emails-tbody"></tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -257,6 +308,148 @@
   // ── INIT ──────────────────────────────────────────────────────────────────
   window.addEventListener('DOMContentLoaded', loadOrders);
 
+  // ── DASHBOARD TABS ────────────────────────────────────────────────────────
+  let serviceDataLoaded = false;
+  function switchDashTab(tab) {
+    document.getElementById('dash-panel-orders').style.display = tab === 'orders' ? 'block' : 'none';
+    document.getElementById('dash-panel-service').style.display = tab === 'service' ? 'block' : 'none';
+    document.getElementById('tab-orders-btn').style.color = tab === 'orders' ? 'var(--rss-blue)' : 'var(--label)';
+    document.getElementById('tab-orders-btn').style.borderBottomColor = tab === 'orders' ? 'var(--rss-blue)' : 'transparent';
+    document.getElementById('tab-service-btn').style.color = tab === 'service' ? 'var(--rss-blue)' : 'var(--label)';
+    document.getElementById('tab-service-btn').style.borderBottomColor = tab === 'service' ? 'var(--rss-blue)' : 'transparent';
+    if (tab === 'service' && !serviceDataLoaded) {
+      loadServicePanel();
+      serviceDataLoaded = true;
+    }
+  }
+
+  // ── FLEET & SERVICE PANEL ─────────────────────────────────────────────────
+  async function loadServicePanel() {
+    try {
+      const [dueRes, fleetRes, emailRes] = await Promise.all([
+        fetch(`${APPS_SCRIPT_URL}?action=getDueService`),
+        fetch(`${APPS_SCRIPT_URL}?action=getFleet`),
+        fetch(`${APPS_SCRIPT_URL}?action=getReminderEmails`).catch(()=>null)
+      ]);
+      const dueList = await dueRes.json();
+      const fleet = await fleetRes.json();
+      renderDueService(dueList);
+      renderFleetServiceTable(fleet);
+      loadReminderEmails();
+    } catch(e) {
+      showToast('Error loading service data', true);
+    }
+  }
+
+  function renderDueService(dueList) {
+    document.getElementById('stat-overdue').textContent = dueList.filter(v=>v.status==='Overdue').length;
+    document.getElementById('stat-duesoon').textContent = dueList.filter(v=>v.status==='Due Soon').length;
+    const tbody = document.getElementById('due-service-tbody');
+    tbody.innerHTML = '';
+    if (!dueList.length) {
+      document.getElementById('due-service-table').style.display = 'none';
+      document.getElementById('due-service-empty').style.display = 'block';
+      return;
+    }
+    document.getElementById('due-service-table').style.display = 'table';
+    document.getElementById('due-service-empty').style.display = 'none';
+    dueList.forEach(v => {
+      const tr = document.createElement('tr');
+      const color = v.status === 'Overdue' ? 'var(--red)' : 'var(--yellow)';
+      tr.innerHTML = `
+        <td>${v.truckNum||''}</td>
+        <td>${v.makeModel||''}</td>
+        <td><span style="color:${color};font-weight:700;">${v.status}</span></td>
+        <td>${v.milesRemaining !== null ? v.milesRemaining : '—'}</td>
+        <td>${v.daysRemaining !== null ? v.daysRemaining : '—'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderFleetServiceTable(fleet) {
+    document.getElementById('stat-fleet-total').textContent = fleet.filter(v=>v['Service Interval Miles']||v['Service Interval Days']).length;
+    const tbody = document.getElementById('fleet-service-tbody');
+    tbody.innerHTML = '';
+    fleet.forEach(v => {
+      const id = v['ID'];
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${v['Truck#']||''}</td>
+        <td>${v['Make/Model']||''}</td>
+        <td><input type="date" id="lsd-${id}" value="${formatDateForInput(v['Last Service Date'])}" style="width:130px;"></td>
+        <td><input type="number" id="lsm-${id}" value="${v['Last Service Mileage']||''}" style="width:90px;"></td>
+        <td><input type="number" id="cm-${id}" value="${v['Current Mileage']||''}" style="width:90px;"></td>
+        <td><input type="number" id="im-${id}" value="${v['Service Interval Miles']||''}" placeholder="e.g. 5000" style="width:90px;"></td>
+        <td><input type="number" id="id-${id}" value="${v['Service Interval Days']||''}" placeholder="e.g. 90" style="width:80px;"></td>
+        <td><button class="btn-reset" onclick="saveFleetService('${id}')" style="padding:5px 12px;">Save</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function formatDateForInput(d) {
+    if (!d) return '';
+    try { return new Date(d).toISOString().slice(0,10); } catch(e) { return ''; }
+  }
+
+  async function saveFleetService(vehicleId) {
+    const intervalMiles = document.getElementById(`im-${vehicleId}`).value;
+    const intervalDays  = document.getElementById(`id-${vehicleId}`).value;
+    const lastServiceMileage = document.getElementById(`lsm-${vehicleId}`).value;
+    const lastServiceDate = document.getElementById(`lsd-${vehicleId}`).value;
+    try {
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'updateFleetService', vehicleId, intervalMiles, intervalDays, lastServiceMileage, lastServiceDate })
+      });
+      const data = await res.json();
+      if (data.success) { showToast('Service settings saved'); loadServicePanel(); }
+      else showToast('Save failed', true);
+    } catch(e) { showToast('Network error', true); }
+  }
+
+  async function loadReminderEmails() {
+    try {
+      const res = await fetch(`${APPS_SCRIPT_URL}?action=getReminderEmailsList`);
+      const emails = await res.json();
+      renderReminderEmails(Array.isArray(emails) ? emails : []);
+    } catch(e) {
+      renderReminderEmails([]);
+    }
+  }
+
+  function renderReminderEmails(emails) {
+    const tbody = document.getElementById('reminder-emails-tbody');
+    tbody.innerHTML = '';
+    emails.forEach(email => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${email}</td><td><button class="btn-delete" onclick="removeReminderEmail('${email}')">Remove</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function addReminderEmail() {
+    const email = document.getElementById('new-reminder-email').value.trim();
+    if (!email) return;
+    try {
+      const res = await fetch(APPS_SCRIPT_URL, { method:'POST', body: JSON.stringify({ action:'addReminderEmail', email }) });
+      const data = await res.json();
+      if (data.success) { showToast('Email added'); document.getElementById('new-reminder-email').value=''; loadReminderEmails(); }
+      else showToast('Error adding email', true);
+    } catch(e) { showToast('Network error', true); }
+  }
+
+  async function removeReminderEmail(email) {
+    try {
+      const res = await fetch(APPS_SCRIPT_URL, { method:'POST', body: JSON.stringify({ action:'deleteReminderEmail', email }) });
+      const data = await res.json();
+      if (data.success) { showToast('Email removed'); loadReminderEmails(); }
+      else showToast('Error removing email', true);
+    } catch(e) { showToast('Network error', true); }
+  }
+
+
   async function loadOrders() {
     try {
       const res = await fetch(`${APPS_SCRIPT_URL}?action=getAll`);
@@ -286,7 +479,7 @@
       const tr = document.createElement('tr');
       const statusClass = (o['Status'] || 'Open').replace(/\s+/g, '-');
       tr.innerHTML = `
-        <td class="wo-num">${o['WO#'] || ''}</td>
+        <td class="wo-num"><a href="print-wo.html?wo=${encodeURIComponent(o['WO#']||'')}" target="_blank" style="color:inherit;text-decoration:underline;cursor:pointer;">${o['WO#'] || ''}</a></td>
         <td>${o['Date Created'] || ''}</td>
         <td class="vehicle">${o['Make/Model'] || ''}</td>
         <td>${o['Truck#'] || ''}</td>
