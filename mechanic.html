@@ -235,16 +235,29 @@
           <textarea id="mn-${woId}" placeholder="Any additional notes…" style="min-height:50px;"></textarea>
           <span class="field-label">Date Completed</span>
           <input type="date" id="dc-${woId}" value="${new Date().toISOString().slice(0,10)}">
+          <div style="display:flex;align-items:center;gap:10px;margin:14px 0;">
+            <input type="checkbox" id="svc-${woId}" onclick="toggleSvcMileage('${woId}')" style="width:18px;height:18px;">
+            <label for="svc-${woId}" style="font-size:13px;font-weight:600;cursor:pointer;">This was a routine service (oil change, etc.) — update service tracking</label>
+          </div>
+          <div id="svc-mileage-wrap-${woId}" style="display:none;margin-bottom:14px;">
+            <span class="field-label">Mileage / Hrs at Service</span>
+            <input type="number" id="svcm-${woId}" placeholder="Current odometer / hour meter reading">
+          </div>
           <span class="field-label" style="margin-top:14px;">Signature</span>
           <div class="sig-wrap">
             <canvas id="sig-${woId}" height="120"></canvas>
             <span class="sig-clear" onclick="clearSig('${woId}')">Clear</span>
           </div>
           <button class="btn-print" onclick="printOrder('${woId}')">🖨 Print This Work Order</button>
-          <button class="btn-complete" onclick="submitComplete('${o['WO#']}', '${woId}')">Mark Complete ✓</button>
+          <button class="btn-complete" onclick="submitComplete('${o['WO#']}', '${woId}', '${o['Vehicle ID']||''}')">Mark Complete ✓</button>
         </div>
       </div>
     `;
+  }
+
+  function toggleSvcMileage(woId) {
+    const cb = document.getElementById(`svc-${woId}`);
+    document.getElementById(`svc-mileage-wrap-${woId}`).style.display = cb.checked ? 'block' : 'none';
   }
 
   function printOrder(woId) {
@@ -311,14 +324,17 @@
   }
 
   // ── SUBMIT COMPLETE ───────────────────────────────────────────────────────
-  async function submitComplete(woNum, woId) {
+  async function submitComplete(woNum, woId, vehicleId) {
     const workCompleted = document.getElementById(`wc-${woId}`).value.trim();
     const mechNotes     = document.getElementById(`mn-${woId}`).value.trim();
     const dateCompleted = document.getElementById(`dc-${woId}`).value;
     const signature     = sigData[woId] || '';
+    const isService      = document.getElementById(`svc-${woId}`).checked;
+    const completedMileage = isService ? document.getElementById(`svcm-${woId}`).value : '';
 
     if (!workCompleted) { showToast('Please describe the work completed.', true); return; }
     if (!signature)      { showToast('Please sign before submitting.', true); return; }
+    if (isService && !completedMileage) { showToast('Please enter the mileage/hours for this service.', true); return; }
 
     const btn = document.querySelector(`#card-${woId} .btn-complete`);
     btn.disabled = true;
@@ -327,7 +343,7 @@
     try {
       const res = await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
-        body: JSON.stringify({ action: 'complete', woNum, workCompleted, mechNotes, dateCompleted, signature })
+        body: JSON.stringify({ action: 'complete', woNum, workCompleted, mechNotes, dateCompleted, signature, isService, completedMileage, vehicleId })
       });
       const data = await res.json();
 
