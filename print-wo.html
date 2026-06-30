@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RSS — Work Order</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap');
+:root{ --blue:#1a3a6b; --border:#888; --text:#1a1a1a; --label:#3a4a60; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:#dde3ec;color:var(--text);}
+.toolbar{background:#1a3a6b;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;}
+.toolbar-title{color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;letter-spacing:.05em;text-transform:uppercase;}
+.btn-print{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:#c8000a;color:#fff;border:none;border-radius:4px;padding:9px 22px;cursor:pointer;}
+.btn-print:hover{background:#a00008;}
+.sheet{max-width:800px;margin:24px auto 60px;background:#fff;padding:36px 40px;border:1px solid var(--border);}
+.wo-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid var(--blue);padding-bottom:14px;margin-bottom:18px;}
+.logo-block{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;color:var(--blue);letter-spacing:.03em;}
+.logo-sub{font-size:10px;color:var(--label);letter-spacing:.08em;text-transform:uppercase;margin-top:2px;}
+.wo-meta{text-align:right;}
+.wo-num{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:var(--blue);}
+.wo-date{font-size:12px;color:var(--label);margin-top:2px;}
+.status-stamp{display:inline-block;margin-top:6px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:3px;}
+.status-Open{background:#fff3cd;color:#856404;}
+.status-Complete{background:#d1f0da;color:#1a7a3a;}
+.status-In-Progress{background:#cce5ff;color:#004085;}
+
+.section-label{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid #ccc;padding-bottom:4px;margin:18px 0 10px;}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px;margin-bottom:6px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;}
+.field{margin-bottom:4px;}
+.field .lbl{font-size:10px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.04em;}
+.field .val{font-size:13px;font-weight:600;border-bottom:1px solid #ccc;min-height:18px;padding:2px 0;}
+.desc-box{border:1px solid #ccc;border-radius:3px;padding:10px 12px;font-size:13px;min-height:60px;margin-bottom:4px;white-space:pre-wrap;}
+.sig-row{display:flex;gap:40px;margin-top:24px;}
+.sig-block{flex:1;}
+.sig-img{border-bottom:1px solid #333;min-height:50px;display:flex;align-items:flex-end;padding-bottom:4px;}
+.sig-img img{max-height:50px;}
+.sig-label{font-size:10px;font-weight:700;color:var(--label);text-transform:uppercase;letter-spacing:.04em;margin-top:4px;}
+.loading{text-align:center;padding:60px;color:#6a7a90;}
+
+@media print {
+  body{background:#fff;}
+  .toolbar{display:none;}
+  .sheet{margin:0;border:none;padding:20px;max-width:100%;}
+}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <div class="toolbar-title">Work Order — Print View</div>
+  <button class="btn-print" onclick="window.print()">🖨 Print</button>
+</div>
+
+<div class="sheet" id="sheet">
+  <div class="loading" id="loading">Loading work order…</div>
+</div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOQPRE-Dp-QPC7E8k2ASM8lF1VYHgmLSwIwFwyMRz-PmiDITqjViLw226OFXwzyHcnIA/exec';
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(window.location.search);
+  const woNum = params.get('wo');
+  if (!woNum) { document.getElementById('loading').textContent = 'No work order specified.'; return; }
+
+  try {
+    const res = await fetch(`${APPS_SCRIPT_URL}?action=getOrder&woNum=${encodeURIComponent(woNum)}`);
+    const o = await res.json();
+    if (!o) { document.getElementById('loading').textContent = 'Work order not found.'; return; }
+    render(o);
+  } catch(e) {
+    document.getElementById('loading').textContent = 'Error loading work order.';
+  }
+});
+
+function render(o) {
+  const statusClass = (o['Status']||'Open').replace(/\s+/g,'-');
+  document.getElementById('sheet').innerHTML = `
+    <div class="wo-header">
+      <div>
+        <div class="logo-block">RSS</div>
+        <div class="logo-sub">Road Safety Systems — Fleet Maintenance</div>
+      </div>
+      <div class="wo-meta">
+        <div class="wo-num">${o['WO#']||''}</div>
+        <div class="wo-date">Created: ${o['Date Created']||''}</div>
+        <span class="status-stamp status-${statusClass}">${o['Status']||'Open'}</span>
+      </div>
+    </div>
+
+    <div class="section-label">Vehicle Information</div>
+    <div class="grid">
+      <div class="field"><div class="lbl">Make / Model</div><div class="val">${o['Make/Model']||''}</div></div>
+      <div class="field"><div class="lbl">Truck #</div><div class="val">${o['Truck#']||''}</div></div>
+      <div class="field"><div class="lbl">Plate / State</div><div class="val">${o['Plate']||''} ${o['State']||''}</div></div>
+      <div class="field"><div class="lbl">VIN</div><div class="val">${o['VIN']||''}</div></div>
+      <div class="field"><div class="lbl">Mileage / Hrs</div><div class="val">${o['Mileage/Hrs']||''}</div></div>
+      <div class="field"><div class="lbl">USDOT #</div><div class="val">${o['USDOT']||''}</div></div>
+      <div class="field"><div class="lbl">Reg Exp</div><div class="val">${o['Reg Exp']||''}</div></div>
+      <div class="field"><div class="lbl">Insp Exp</div><div class="val">${o['Insp Exp']||''}</div></div>
+    </div>
+
+    <div class="section-label">Order Details</div>
+    <div class="grid-2">
+      <div class="field"><div class="lbl">Requested By</div><div class="val">${o['Requested By']||''}</div></div>
+      <div class="field"><div class="lbl">Assigned To</div><div class="val">${o['Assigned To']||''}</div></div>
+      <div class="field"><div class="lbl">Priority</div><div class="val">${o['Priority']||'Normal'}</div></div>
+      <div class="field"><div class="lbl">Date Completed</div><div class="val">${o['Date Completed']||''}</div></div>
+    </div>
+
+    <div class="section-label">Description of Work Requested</div>
+    <div class="desc-box">${o['Description']||''}</div>
+
+    <div class="section-label">Parts</div>
+    <div class="desc-box" style="min-height:36px;">${o['Parts']||''}</div>
+
+    ${o['Notes'] ? `<div class="section-label">Notes</div><div class="desc-box" style="min-height:36px;">${o['Notes']}</div>` : ''}
+
+    ${o['Work Completed'] ? `
+    <div class="section-label">Work Completed</div>
+    <div class="desc-box">${o['Work Completed']}</div>
+    ` : ''}
+
+    ${o['Mechanic Notes'] ? `
+    <div class="section-label">Mechanic Notes</div>
+    <div class="desc-box" style="min-height:36px;">${o['Mechanic Notes']}</div>
+    ` : ''}
+
+    <div class="sig-row">
+      <div class="sig-block">
+        <div class="sig-img">${o['Signature'] ? `<img src="${o['Signature']}">` : ''}</div>
+        <div class="sig-label">Mechanic Signature</div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-img"></div>
+        <div class="sig-label">Date — ${o['Date Completed']||'________'}</div>
+      </div>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
